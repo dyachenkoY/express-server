@@ -1,54 +1,28 @@
 const express = require("express");
-const yup = require("yup");
+const { validateUserMW } = require("./middlewares/userMW");
+const UserController = require("./controllers/user.controller");
 
 const app = express();
 
 const PORT = 5000;
 
-const usersDB = [];
-
 const bodyParser = express.json();
 
-const USER_CREATION_SCHEMA = yup.object({
-  login: yup.string().required(),
-  password: yup.string().required(),
-});
+app.get("/users", UserController.getUsers);
 
-app.get("/users", (req, res) => {
-  res.send(usersDB);
-});
+app.get("/users/:userId", UserController.getUser);
 
-app.post(
-  "/users",
-  bodyParser,
-  async (req, res, next) => {
-    try {
-      const validateUser = await USER_CREATION_SCHEMA.validate(req.body);
-      next();
-    } catch (error) {
-      res.status(400).send(error.message);
-    }
-  },
-  async (req, res) => {
-    const newUser = {
-      ...req.body,
-      id: Date.now(),
-    };
-
-    usersDB.push(newUser);
-    res.send(newUser);
-  }
-);
+app.post("/users", bodyParser, validateUserMW, UserController.createUser);
 
 app.get("/test*", (req, res) => {
   res.send(`request.path is ${req.path} and request.method is ${req.method}`);
 });
 
-/* 
-api.post
-api.put
-api.patch
-api.
+/*
+app.post
+app.put
+app.patch
+app.delete
 */
 
 app.listen(PORT);
