@@ -1,38 +1,22 @@
-let usersDB = [
-  {
-    id: 1,
-    login: "admin",
-    password: "admin",
-  },
-  {
-    id: 2,
-    login: "betterAdmin",
-    password: "betterAdmin",
-  },
-];
+const User = require("../models/User");
 
 module.exports.createUser = async (req, res) => {
-  const newUser = {
-    ...req.body,
-    id: Date.now(),
-  };
-
-  usersDB.push(newUser);
-
+  const newUser = await User.create(req.body);
   res.send(newUser);
 };
 
 module.exports.getUsers = async (req, res) => {
-  res.send(usersDB);
+  const users = await User.findAll();
+  res.send(users);
 };
 
 module.exports.getUser = async (req, res) => {
   const {
     params: { userId },
-    //query: { page },
+    // query: {page}
   } = req;
 
-  const foundUser = usersDB.find((u) => u.id === +userId);
+  const foundUser = await User.findOne(userId);
 
   if (foundUser) {
     res.send(foundUser);
@@ -44,15 +28,13 @@ module.exports.getUser = async (req, res) => {
 module.exports.deleteUser = async (req, res) => {
   const {
     params: { userId },
-    //query: { page },
   } = req;
 
-  const foundUser = usersDB.find((u) => u.id === +userId);
-
-  if (foundUser) {
-    usersDB = usersDB.filter((u) => u.id !== !Number(userId));
-  } else {
-    res.status(404).send("User not found");
+  try {
+    const deletedUser = await User.delete(userId);
+    res.send(deletedUser);
+  } catch (error) {
+    res.status(404).send(error.message);
   }
 };
 
@@ -62,26 +44,10 @@ module.exports.updateUser = async (req, res) => {
     body,
   } = req;
 
-  const foundUser = usersDB.find((u) => u.id === +userId);
-
-  if (foundUser) {
-    let newUser;
-    usersDB = usersDB.map((u) => {
-      const isSameUser = u.id === Number(userId);
-
-      if (!isSameUser) {
-        return u;
-      } else {
-        newUser = {
-          ...u,
-          ...body,
-        };
-        return newUser;
-      }
-    });
-
-    res.send(newUser);
-  } else {
-    res.status(404).send("User not found");
+  try {
+    const updatedUser = await User.update(userId, body);
+    res.send(updatedUser);
+  } catch (error) {
+    res.status(404).send(error.message);
   }
 };
