@@ -14,6 +14,10 @@ app.get("/users/:userId", UserController.getUser);
 
 app.post("/users", bodyParser, validateUserMW, UserController.createUser);
 
+app.delete("/users/:userId", UserController.deleteUser);
+
+app.put("/users/:userId", bodyParser, UserController.updateUser);
+
 app.get("/test*", (req, res) => {
   res.send(`request.path is ${req.path} and request.method is ${req.method}`);
 });
